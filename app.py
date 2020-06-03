@@ -1,3 +1,4 @@
+# Copyright 2020 tomowarkar
 
 import cv2
 import numpy as np
@@ -9,48 +10,66 @@ from PIL import Image, ImageEnhance
 def main():
     """Page handler"""
 
-    st.title("My App")
-
+    st.title("Tomowarkar")
     pages = ["App", "Cascade"]
-
     choice = st.sidebar.selectbox("Select Page", pages)
     st.subheader(choice)
 
     if choice == "App":
-        app()
+        im = load_image()
+        app(im)
+
     if choice == "Cascade":
-        cascade()
+        im = load_image()
+        cascade(im)
+
+    text = """
+    Author: [tomowarkar](https://tomowarkar.github.io/blog)
+
+    Page Source: [github](https://github.com/tomowarkar/stapp)
+    """
+    st.info(text)
 
 
 # Common
 @st.cache
-def loaf_image(img):
+def image_from_file(img):
     im = Image.open(img)
     return im
 
 
+@st.cache
+def image_from_url(url):
+    import requests
+    from io import BytesIO
+
+    try:
+        response = requests.get(url)
+        im = Image.open(BytesIO(response.content))
+        return im
+    except:
+        return None
+
+
+def load_image():
+    in_url = st.text_input("Image from URL")
+    in_img = st.file_uploader(
+        "or Upload Image (This takes priority)", type=["jpg", "png", "jpeg"]
+    )
+
+    if in_img is None:
+        im = image_from_url(in_url) if any(in_url) else None
+    else:
+        im = image_from_file(in_img)
+
+    return im
+
+
 # Page App
-def app():
+def app(im):
     """Page App"""
-    width = st.sidebar.slider("image width", 100, 1000, 600, 50)
-    processing = [
-        "Original",
-        "Bilevel",
-        "Greyscale",
-        "Contrast",
-        "Brightness",
-        "Colorpick",
-        "Canny",
-        "Hist",
-    ]
-    choice = st.sidebar.radio("Processing", processing)
-
-    img_in = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
-
-    if img_in is not None:
-        im = loaf_image(img_in)
-        st.text(choice)
-
+    width, choice = app_sidebar()
+    if im is not None:
         if choice == "Bilevel":
             img = im.convert("1")
 
@@ -85,7 +104,7 @@ def app():
             img = im
             arr = np.array(im.convert("RGB"))
 
-            for i, col in enumerate(('b', 'g', 'r')):
+            for i, col in enumerate(("b", "g", "r")):
                 histr = cv2.calcHist([arr], [i], None, [256], [0, 256])
                 plt.plot(histr, color=col)
                 plt.xlim([0, 256])
@@ -98,23 +117,28 @@ def app():
         st.image(img, width=width)
 
 
-# Page Cascade
-def cascade():
-    """Page Cascade"""
+def app_sidebar():
     width = st.sidebar.slider("image width", 100, 1000, 600, 50)
+    processing = [
+        "Original",
+        "Bilevel",
+        "Greyscale",
+        "Contrast",
+        "Brightness",
+        "Colorpick",
+        "Canny",
+        "Hist",
+    ]
+    choice = st.sidebar.radio("Processing", processing)
+    return width, choice
 
-    parts = ["Face", "Eye"]
-    choice = st.sidebar.radio("Face Parts", parts)
 
-    c = st.sidebar.beta_color_picker("Color", "#ff0000").lstrip("#")
-    color = tuple(int(c[i: i + 2], 16) for i in (0, 2, 4))
+# Page Cascade
+def cascade(im):
+    """Page Cascade"""
+    width, choice, color, scaleFactor, minNeighbors = cascade_sidebar()
 
-    scaleFactor = st.sidebar.slider("scaleFactor", 1.01, 2.0, 1.1)
-    minNeighbors = st.sidebar.slider("minNeighbors", 0, 10, 4)
-
-    img_in = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
-    if img_in is not None:
-        im = loaf_image(img_in)
+    if im is not None:
         arr = np.array(im.convert("RGB"))
         img = cv2.cvtColor(arr, 1)
         gray = cv2.cvtColor(arr, cv2.COLOR_BGR2GRAY)
@@ -125,11 +149,28 @@ def cascade():
         if "Eye" == choice:
             cascade = cv2.CascadeClassifier("haarcascade_eye.xml")
 
-        rects = cascade.detectMultiScale(gray, scaleFactor=scaleFactor, minNeighbors=minNeighbors)
+        rects = cascade.detectMultiScale(
+            gray, scaleFactor=scaleFactor, minNeighbors=minNeighbors
+        )
         st.success(f"Found {len(rects)} parts")
         for (x, y, w, h) in rects:
             cv2.rectangle(img, (x, y), (x + w, y + h), color, thickness=3)
         st.image(img, width=width)
+
+
+def cascade_sidebar():
+    width = st.sidebar.slider("image width", 100, 1000, 600, 50)
+
+    parts = ["Face", "Eye"]
+    choice = st.sidebar.radio("Face Parts", parts)
+
+    c = st.sidebar.beta_color_picker("Color", "#ff0000").lstrip("#")
+    color = tuple(int(c[i : i + 2], 16) for i in (0, 2, 4))
+
+    scaleFactor = st.sidebar.slider("scaleFactor", 1.01, 2.0, 1.1)
+    minNeighbors = st.sidebar.slider("minNeighbors", 0, 10, 4)
+
+    return width, choice, color, scaleFactor, minNeighbors
 
 
 if __name__ == "__main__":
