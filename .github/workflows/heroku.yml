@@ -1,0 +1,13 @@
+name: Heroku Alarm Clock
+
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Alarm
+        run: curl https://still-sands-82310.herokuapp.com/
