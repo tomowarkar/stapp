@@ -52,7 +52,12 @@ def image_from_url(url):
 
 
 def load_image():
-    in_url = st.text_input("Image from URL")
+    default = "https://1.bp.blogspot.com/-nB77P4LkQC8/XWS5gdVF9xI/AAAAAAABUTM/2ilcEL7lWaICdqSRUpkxiAoxHMS9qqIQwCLcBGAs/s550/group_young_world.png"
+    in_url = st.text_input("Image from URL", value=default)
+    if in_url == default:
+        st.warning(
+            "Image from [いらすとや](https://www.irasutoya.com/2019/10/blog-post_448.html)"
+        )
     in_img = st.file_uploader(
         "or Upload Image (This takes priority)", type=["jpg", "png", "jpeg"]
     )
