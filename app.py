@@ -11,7 +11,7 @@ def main():
     """Page handler"""
 
     st.title("Tomowarkar")
-    pages = ["App", "Cascade"]
+    pages = ["App", "Cascade", "MosaicVideo"]
     choice = st.sidebar.selectbox("Select Page", pages)
     st.subheader(choice)
 
@@ -22,6 +22,11 @@ def main():
     if choice == "Cascade":
         im = load_image()
         cascade(im)
+
+    if choice == "MosaicVideo":
+        from mosaic_video import mosaic
+
+        mosaic()
 
     text = """
     Author: [tomowarkar](https://tomowarkar.github.io/blog)
