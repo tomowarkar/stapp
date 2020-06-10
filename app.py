@@ -11,7 +11,7 @@ def main():
     """Page handler"""
 
     st.title("Tomowarkar")
-    pages = ["App", "Cascade", "MosaicVideo"]
+    pages = ["App", "Cascade"]
     choice = st.sidebar.selectbox("Select Page", pages)
     st.subheader(choice)
 
