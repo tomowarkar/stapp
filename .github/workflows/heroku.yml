@@ -2,7 +2,7 @@ name: Heroku Alarm Clock
 
 on:
   schedule:
-    - cron: "*/20 * * * *"
+    - cron: "*/20 17-23,0-7 * * *"
 
 jobs:
   build:
