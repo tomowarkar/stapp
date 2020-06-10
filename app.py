@@ -11,9 +11,13 @@ def main():
     """Page handler"""
 
     st.title("Tomowarkar")
-    pages = ["App", "Cascade"]
+    pages = ["About", "App", "Cascade"]
     choice = st.sidebar.selectbox("Select Page", pages)
     st.subheader(choice)
+
+    if choice == "About":
+        st.info("Click on the upper left menu to select a page.")
+        st.write(ABOUT_TEXT)
 
     if choice == "App":
         im = load_image()
@@ -184,4 +188,16 @@ def cascade_sidebar():
 
 
 if __name__ == "__main__":
+    ABOUT_TEXT = """
+        ## Welcome to this app!\n
+        このウェブサイトは[tomowarkar](https://tomowarkar.github.io/blog)によって作成されたデモページです。\n
+        Pythonを用いて開発され、Herokuによってホストされています。\n
+        左側にあるページ選択からお好きなページへとお移りください。\n
+        ## Pages info\n
+        ### App\n
+        [OpenCV](https://opencv.org/)を使った様々な画像加工を行う。\n
+        ### Cascade\n
+        [OpenCV](https://opencv.org/)の顔判定モデル使った人間の顔判定を行う。\n
+        """
+
     main()
