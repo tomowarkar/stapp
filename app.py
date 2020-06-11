@@ -3,7 +3,6 @@
 import cv2
 import numpy as np
 import streamlit as st
-from matplotlib import pyplot as plt
 from PIL import Image, ImageEnhance
 
 
@@ -72,7 +71,12 @@ def load_image():
     )
 
     if in_img is None:
-        im = image_from_url(in_url) if any(in_url) else None
+        if any(in_url):
+            im = image_from_url(in_url)
+            if im is None:
+                st.error("Invalid URL")
+        else:
+            im = None
     else:
         im = image_from_file(in_img)
 
@@ -115,7 +119,8 @@ def app(im):
             img = cv2.Canny(gray, a, b)
 
         elif choice == "Hist":
-            img = im
+            from matplotlib import pyplot as plt
+
             arr = np.array(im.convert("RGB"))
 
             for i, col in enumerate(("b", "g", "r")):
@@ -125,10 +130,53 @@ def app(im):
 
             st.pyplot()
 
-        else:
-            img = im
+        elif choice == "Kuwahara":
+            # https://en.wikipedia.org/wiki/Kuwahara_filter
+            # https://qiita.com/Cartelet/items/5c1c012c132be3aa9608
+            r = st.sidebar.slider(choice, 5, 50, 5, 5)
+            arr = np.array(im.convert("RGB"))
+            h, w, _ = arr.shape
+            img = np.empty_like(arr)
+            arr = np.pad(arr, ((r, r), (r, r), (0, 0)), "edge")
+            ave, var = cv2.integral2(arr)
+            ave_mask = (
+                ave[: -r - 1, : -r - 1]
+                + ave[r + 1 :, r + 1 :]
+                - ave[r + 1 :, : -r - 1]
+                - ave[: -r - 1, r + 1 :]
+            )
+            ave = ave_mask / (r + 1) ** 2
 
-        st.image(img, width=width)
+            var_mask = (
+                var[: -r - 1, : -r - 1]
+                + var[r + 1 :, r + 1 :]
+                - var[r + 1 :, : -r - 1]
+                - var[: -r - 1, r + 1 :]
+            )
+            var = (var_mask / (r + 1) ** 2 - ave ** 2).sum(axis=2)
+
+            for i in range(h):
+                for j in range(w):
+                    a1, b1, c1, d1, = (
+                        ave[i, j],
+                        ave[i + r, j],
+                        ave[i, j + r],
+                        ave[i + r, j + r],
+                    )
+                    a2, b2, c2, d2, = (
+                        var[i, j],
+                        var[i + r, j],
+                        var[i, j + r],
+                        var[i + r, j + r],
+                    )
+                    img[i, j] = np.array([a1, b1, c1, d1])[
+                        np.array([a2, b2, c2, d2]).argmin()
+                    ]
+
+        try:
+            st.image(img, width=width)
+        except UnboundLocalError:
+            st.image(im, width=width)
 
 
 def app_sidebar():
@@ -142,6 +190,7 @@ def app_sidebar():
         "Colorpick",
         "Canny",
         "Hist",
+        "Kuwahara",
     ]
     choice = st.sidebar.radio("Processing", processing)
     return width, choice
