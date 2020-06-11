@@ -55,29 +55,29 @@ def image_from_url(url):
         response = requests.get(url)
         im = Image.open(BytesIO(response.content))
         return im
-    except:
+    except OSError:
         return None
 
 
 def load_image():
     default = "https://1.bp.blogspot.com/-nB77P4LkQC8/XWS5gdVF9xI/AAAAAAABUTM/2ilcEL7lWaICdqSRUpkxiAoxHMS9qqIQwCLcBGAs/s550/group_young_world.png"
     in_url = st.text_input("Image from URL", value=default)
-    if in_url == default:
-        st.warning(
-            "Image from [いらすとや](https://www.irasutoya.com/2019/10/blog-post_448.html)"
-        )
     in_img = st.file_uploader(
         "or Upload Image (This takes priority)", type=["jpg", "png", "jpeg"]
     )
 
-    if in_img is None:
-        if any(in_url):
-            im = image_from_url(in_url)
-            if im is None:
-                st.error("Invalid URL")
-        else:
-            im = None
-    else:
+    if in_url == default:
+        st.warning(
+            "Image from [いらすとや](https://www.irasutoya.com/2019/10/blog-post_448.html)"
+        )
+
+    im = None
+    if any(in_url):
+        im = image_from_url(in_url)
+        if im is None:
+            st.error("Invalid URL")
+
+    if in_img is not None:
         im = image_from_file(in_img)
 
     return im
