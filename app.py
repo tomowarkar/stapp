@@ -83,6 +83,21 @@ def load_image():
     return im
 
 
+def signature(img):
+    sign = st.sidebar.text_input("")
+    if sign == "hoge":
+        return img
+    return cv2.putText(
+        img,
+        "tomowarkar",
+        (30, img.shape[0] - 30),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1.0,
+        (255, 255, 255),
+        thickness=1,
+    )
+
+
 # Page App
 def app(im):
     """Page App"""
@@ -117,6 +132,7 @@ def app(im):
             gray = cv2.cvtColor(arr, cv2.COLOR_BGR2GRAY)
             a, b = st.sidebar.slider(choice, 0, 500, (200, 400))
             img = cv2.Canny(gray, a, b)
+            img = signature(img)
 
         elif choice == "Hist":
             from matplotlib import pyplot as plt
@@ -172,6 +188,7 @@ def app(im):
                     img[i, j] = np.array([a1, b1, c1, d1])[
                         np.array([a2, b2, c2, d2]).argmin()
                     ]
+            img = signature(img)
 
         try:
             st.image(img, width=width)
