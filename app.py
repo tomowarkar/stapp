@@ -20,11 +20,13 @@ def main():
 
     if choice == "App":
         im = load_image()
-        app(im)
+        with st.spinner("Generating ..."):
+            app(im)
 
     if choice == "Cascade":
         im = load_image()
-        cascade(im)
+        with st.spinner("Generating ..."):
+            cascade(im)
 
     if choice == "MosaicVideo":
         from mosaic_video import mosaic
@@ -66,7 +68,7 @@ def load_image():
         "or Upload Image (This takes priority)", type=["jpg", "png", "jpeg"]
     )
 
-    if in_url == default:
+    if in_img is None and in_url == default:
         st.warning(
             "Image from [いらすとや](https://www.irasutoya.com/2019/10/blog-post_448.html)"
         )
